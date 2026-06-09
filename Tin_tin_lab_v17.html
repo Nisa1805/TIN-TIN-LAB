@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIN-TIN LAB — Bidang Miring</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0b1d3a;--navy2:#132340;
+  --blue:#1d4ed8;--blue2:#3b82f6;--cyan:#0ea5e9;
+  --green:#16a34a;--red:#dc2626;--orange:#ea580c;
+  --purple:#7c3aed;--amber:#d97706;
+  --bg:#eef2f9;--surface:#fff;--surface2:#f8fafd;
+  --border:#e1e8f5;--text:#0f172a;--muted:#5e7494;
+  --R:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Plus Jakarta Sans',sans-serif;display:flex;justify-content:center}
+.app{width:100%;max-width:460px;height:100%;background:var(--surface);display:flex;flex-direction:column;overflow:hidden}
+
+/* SCREENS */
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden}
+.screen.active{display:flex}
+
+/* SCROLL BODY */
+.scroll-body{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px;display:flex;flex-direction:column;gap:12px;-webkit-overflow-scrolling:touch}
+.scroll-body::-webkit-scrollbar{width:3px}
+.scroll-body::-webkit-scrollbar-thumb{background:#c7d5eb;border-radius:4px}
+
+/* HOME HEADER */
+.home-header{
+  background:linear-gradient(150deg,var(--navy) 0%,#1a3a6e 100%);
+  padding:28px 20px 24px;flex-shrink:0;position:relative;overflow:hidden;
+}
+.home-header::before{content:'';position:absolute;top:-60px;right:-50px;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.3),transparent 65%)}
+.home-header::after{content:'';position:absolute;bottom:-30px;left:-10px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,rgba(14,165,233,.2),transparent 65%)}
+.brand{display:flex;align-items:center;gap:13px;margin-bottom:14px;position:relative;z-index:1}
+.brand-badge{width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--blue2),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 4px 16px rgba(59,130,246,.4)}
+.brand-name{color:#fff;font-size:1.5rem;font-weight:800;letter-spacing:-.5px}
+.brand-sub{color:rgba(255,255,255,.6);font-size:.74rem;margin-top:2px}
+.home-tagline{color:rgba(255,255,255,.8);font-size:.85rem;line-height:1.6;position:relative;z-index:1}
+
+/* PAGE HEADER */
+.page-header{background:linear-gradient(150deg,var(--navy),#1a3a6e);padding:15px 18px 13px;flex-shrink:0;position:relative;overflow:hidden}
+.page-header::before{content:'';position:absolute;top:-40px;right:-40px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(59,130,246,.3),transparent 65%)}
+.ph-top{display:flex;align-items:center;gap:10px;position:relative;z-index:1}
+.ph-back{width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,.12);border:0;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:.15s;font-family:inherit}
+.ph-back:hover{background:rgba(255,255,255,.22)}
+.ph-title{color:#fff;font-size:1.1rem;font-weight:800}
+.ph-sub{color:rgba(255,255,255,.55);font-size:.72rem;margin-top:2px}
+
+/* MENU CARDS */
+.menu-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--R);padding:16px 18px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:.2s}
+.menu-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08);border-color:var(--blue2)}
+.menu-card:active{transform:scale(.98)}
+.mc-icon{width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.55rem;flex-shrink:0}
+.mc-title{font-size:.95rem;font-weight:700;color:var(--text);margin-bottom:3px}
+.mc-desc{font-size:.75rem;color:var(--muted);line-height:1.4}
+.mc-arrow{color:var(--muted);font-size:1.3rem;flex-shrink:0;margin-left:auto}
+
+/* BAB CHAPTERS */
+.bab-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--R)}
+.bab-header{display:flex;align-items:center;gap:13px;padding:14px 16px;cursor:pointer;user-select:none;transition:background .2s}
+.bab-header:hover{background:var(--surface2)}
+.bab-card.open .bab-header{background:#f0f6ff;border-bottom:2px solid var(--border)}
+.bab-number{font-size:.58rem;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.bab-title{font-size:.92rem;font-weight:800;color:var(--text);line-height:1.2}
+.bab-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.bab-chevron{margin-left:auto;width:26px;height:26px;border-radius:8px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem;transition:transform .25s;flex-shrink:0}
+.bab-card.open .bab-chevron{transform:rotate(90deg);background:#dbeafe;border-color:#93c5fd;color:var(--blue)}
+.bab-body{display:none;flex-direction:column}
+.bab-card.open .bab-body{display:block}
+.bab-intro{padding:13px 16px;font-size:.81rem;color:#334155;line-height:1.75;border-bottom:1.5px solid var(--border)}
+.bab-intro b{color:var(--text)}
+
+/* SUB-BAB */
+.subbab{border-top:1px solid var(--border)}
+.subbab-head{display:flex;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;background:#f8faff;user-select:none;transition:background .2s}
+.subbab-head:hover{background:#eff6ff}
+.subbab.open .subbab-head{background:#eff6ff}
+.subbab-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.subbab-title{font-size:.82rem;font-weight:700;color:var(--text);flex:1}
+.subbab-chevron{color:var(--muted);font-size:.85rem;transition:transform .25s;flex-shrink:0}
+.subbab.open .subbab-chevron{transform:rotate(90deg);color:var(--blue)}
+.subbab-body{display:none;padding:14px 16px;background:var(--surface)}
+.subbab.open .subbab-body{display:block}
+.subbab-body>*{margin-bottom:10px}
+.subbab-body>*:last-child{margin-bottom:0}
+.subbab-body p{font-size:.81rem;color:#334155;line-height:1.75}
+.subbab-body p b{color:var(--text)}
+
+/* FORMULA BLOCKS */
+.fblock{background:var(--navy);border-radius:13px;padding:14px 16px;overflow-x:auto;text-align:center}
+.fblock .katex-display{margin:0}
+.fblock .katex,.fblock .katex *,.fblock .katex-display .katex{color:#e2e8f0 !important}
+
+/* INFO STRIP */
+.info-strip{border-radius:14px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start;font-size:.79rem;line-height:1.55}
+.info-strip .si{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.info-strip b{font-weight:700}
+
+/* KEY TERM */
+.kterm{background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:6px;font-weight:600;font-size:.78rem}
+
+/* SEC TITLE */
+.sec-title{font-size:.63rem;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--muted)}
+
+/* SIMULASI */
+.canvas-wrap{background:linear-gradient(135deg,#f0f9ff,#dbeafe);border:1.5px solid #bae6fd;border-radius:var(--R);padding:12px}
+canvas{width:100%;border-radius:14px;border:1px solid #e2e8f0;display:block;background:#fff}
+.legend{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:10px}
+.leg{display:inline-flex;align-items:center;gap:5px;font-size:.71rem;font-weight:600;color:var(--text)}
+.ldot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.slider-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:16px;padding:12px 14px}
+.sl-label{display:flex;justify-content:space-between;align-items:center;font-size:.79rem;font-weight:600;margin-bottom:7px}
+.sl-val{background:var(--navy);color:#fff;font-size:.7rem;font-weight:700;padding:2px 9px;border-radius:20px;font-family:'JetBrains Mono',monospace}
+input[type=range]{width:100%;height:5px;border-radius:4px;cursor:pointer;accent-color:var(--blue2)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat-card{background:var(--surface2);border:1.5px solid var(--border);border-radius:14px;padding:10px 6px;text-align:center}
+.stat-lbl{font-size:.64rem;color:var(--muted);font-weight:600;margin-bottom:4px;line-height:1.3}
+.stat-val{font-size:1.05rem;font-weight:800;color:var(--navy);font-family:'JetBrains Mono',monospace}
+.verdict{border-radius:14px;padding:12px 14px;font-weight:700;font-size:.79rem;display:flex;align-items:center;gap:8px;border:1.5px solid transparent;transition:.3s}
+.verdict.gerak{background:#dcfce7;color:#14532d;border-color:#86efac}
+.verdict.diam{background:#fef9c3;color:#854d0e;border-color:#fde047}
+.verdict.idle{background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.btn-row{display:flex;gap:8px}
+.btn-row button{flex:1;background:var(--navy);color:#fff;border:0;padding:12px 6px;border-radius:14px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.79rem;font-weight:700;cursor:pointer;transition:.15s}
+.btn-row button:active{transform:scale(.97)}
+.btn-sec{background:#e2e8f0 !important;color:var(--navy) !important}
+.btn-dng{background:#fef2f2 !important;color:#b91c1c !important}
+.note-txt{font-size:.66rem;text-align:center;color:var(--muted)}
+
+/* KUIS */
+.paket-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.paket-card{background:var(--surface);border:2px solid var(--border);border-radius:18px;padding:20px 8px 16px;text-align:center;cursor:pointer;transition:.2s;display:flex;flex-direction:column;align-items:center;gap:7px}
+.paket-card:hover{border-color:var(--blue2);background:#f5f8ff;transform:translateY(-2px)}
+.paket-card.selected{background:var(--navy);border-color:var(--navy);color:#fff}
+.paket-card.selected .pk-sub{color:rgba(255,255,255,.55)}
+.pk-icon{font-size:1.9rem;line-height:1}
+.pk-label{font-size:.84rem;font-weight:800}
+.pk-sub{font-size:.67rem;color:var(--muted)}
+.mulai-btn{width:100%;background:var(--navy);color:#fff;border:0;padding:14px;border-radius:16px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.88rem;font-weight:700;cursor:pointer;transition:.15s}
+.mulai-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+.mulai-btn:not(:disabled):hover{background:#1e3a6e}
+.soal-wrap{display:flex;flex-direction:column;gap:11px}
+.prog-wrap{display:flex;align-items:center;gap:10px}
+.prog-bar{flex:1;height:6px;background:#e2e8f0;border-radius:6px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:6px;transition:.4s}
+.prog-lbl{font-size:.71rem;font-weight:700;color:var(--muted);white-space:nowrap}
+.soal-box{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--R);padding:15px}
+.soal-q{font-size:.88rem;font-weight:600;color:var(--text);line-height:1.6;margin-bottom:13px}
+.option{display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer;transition:.2s;font-size:.82rem;font-weight:500}
+.option:last-of-type{margin-bottom:0}
+.option:hover{border-color:var(--blue2);background:#eff6ff}
+.option.correct{background:#dcfce7;border-color:#86efac;color:#14532d;pointer-events:none}
+.option.wrong{background:#fee2e2;border-color:#fca5a5;color:#b91c1c;pointer-events:none}
+.option.locked{pointer-events:none}
+.opt-badge{width:26px;height:26px;border-radius:8px;flex-shrink:0;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--navy)}
+.option.correct .opt-badge{background:#86efac;color:#14532d}
+.option.wrong .opt-badge{background:#fca5a5;color:#b91c1c}
+.fb-box{background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:11px 13px;font-size:.79rem;color:#1e3a5f;line-height:1.6}
+.next-btn{width:100%;background:var(--navy);color:#fff;border:0;padding:12px;border-radius:13px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.84rem;font-weight:700;cursor:pointer;transition:.15s}
+.next-btn:disabled{opacity:.35;cursor:not-allowed}
+.hasil-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+.skor-ring{width:128px;height:128px;border-radius:64px;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 0 0 10px rgba(29,78,216,.12)}
+.skor-num{font-size:2.4rem;font-weight:800;color:#fff;font-family:'JetBrains Mono',monospace;line-height:1}
+.skor-sub{font-size:.7rem;color:rgba(255,255,255,.5);margin-top:4px}
+.hasil-label{font-size:1rem;font-weight:800;color:var(--navy);text-align:center}
+.review-list{width:100%;display:flex;flex-direction:column;gap:8px}
+.rev-item{background:var(--surface2);border:1.5px solid var(--border);border-radius:12px;padding:10px 13px;display:flex;gap:10px;align-items:flex-start;font-size:.79rem;line-height:1.5}
+.rev-icon{flex-shrink:0;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════ BERANDA ══════════════ -->
+<div id="homeScreen" class="screen active">
+  <div class="home-header">
+    <div class="brand">
+      <div class="brand-badge">⚡</div>
+      <div>
+        <div class="brand-name">TIN-TIN LAB</div>
+        <div class="brand-sub">Bidang Miring</div>
+      </div>
+    </div>
+    <div class="home-tagline">Pahami bidang miring dengan cara yang lebih asyik.</div>
+  </div>
+  <div class="scroll-body">
+    <div class="sec-title">Pilih Modul</div>
+
+    <div class="menu-card" onclick="gotoScreen('konsep')">
+      <div class="mc-icon" style="background:#eff6ff">📖</div>
+      <div>
+        <div class="mc-title">Konsep &amp; Teori</div>
+      </div>
+      <div class="mc-arrow">›</div>
+    </div>
+
+    <div class="menu-card" onclick="gotoScreen('simulasi')">
+      <div class="mc-icon" style="background:#f0fdf4">🎮</div>
+      <div>
+        <div class="mc-title">Simulasi Interaktif</div>
+      </div>
+      <div class="mc-arrow">›</div>
+    </div>
+
+    <div class="menu-card" onclick="gotoScreen('kuis')">
+      <div class="mc-icon" style="background:#fdf4ff">🧠</div>
+      <div>
+        <div class="mc-title">Kuis Evaluasi</div>
+      </div>
+      <div class="mc-arrow">›</div>
+    </div>
+
+    <div class="sec-title">Penerapan dalam Kehidupan Sehari-hari</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">🛣️</div>
+        <div style="font-size:.77rem;font-weight:700;color:#1e40af;margin-bottom:4px">Jalan Tanjakan</div>
+        <div style="font-size:.73rem;color:#1d4ed8;line-height:1.5">Dirancang dengan sudut landai agar kendaraan tidak membutuhkan gaya mesin yang terlalu besar untuk mendaki.</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">♿</div>
+        <div style="font-size:.77rem;font-weight:700;color:#14532d;margin-bottom:4px">Ramp Kursi Roda</div>
+        <div style="font-size:.73rem;color:#166534;line-height:1.5">Sudut ≤ 8° agar gaya dorong cukup kecil — pengguna kursi roda dapat melewatinya dengan mudah.</div>
+      </div>
+      <div style="background:#fff7ed;border:1.5px solid #fed7aa;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">🏠</div>
+        <div style="font-size:.77rem;font-weight:700;color:#9a3412;margin-bottom:4px">Atap Rumah</div>
+        <div style="font-size:.73rem;color:#c2410c;line-height:1.5">Kemiringan atap harus sesuai agar air hujan mengalir lancar namun genteng tidak melorot akibat gravitasi.</div>
+      </div>
+      <div style="background:#fdf4ff;border:1.5px solid #d8b4fe;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">🎿</div>
+        <div style="font-size:.77rem;font-weight:700;color:#6b21a8;margin-bottom:4px">Olahraga Ski</div>
+        <div style="font-size:.73rem;color:#7c3aed;line-height:1.5">Kemiringan lereng dan μk permukaan salju menentukan kecepatan meluncur dan jarak pengereman.</div>
+      </div>
+      <div style="background:#fef9c3;border:1.5px solid #fde047;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">🏭</div>
+        <div style="font-size:.77rem;font-weight:700;color:#854d0e;margin-bottom:4px">Conveyor Belt</div>
+        <div style="font-size:.73rem;color:#a16207;line-height:1.5">Digunakan di industri untuk mengangkut barang ke ketinggian — sudut dan gesek ban-belt harus diperhitungkan.</div>
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:18px;padding:14px">
+        <div style="font-size:1.5rem;margin-bottom:7px">🚢</div>
+        <div style="font-size:.77rem;font-weight:700;color:#991b1b;margin-bottom:4px">Gangway Kapal</div>
+        <div style="font-size:.73rem;color:#b91c1c;line-height:1.5">Jembatan penghubung kapal ke dermaga berbentuk bidang miring agar penumpang dan kargo naik-turun dengan aman.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ KONSEP ══════════════ -->
+<div id="konsepScreen" class="screen">
+  <div class="page-header">
+    <div class="ph-top">
+      <button class="ph-back" onclick="gotoScreen('home')">‹</button>
+      <div>
+        <div class="ph-title">📖 Konsep &amp; Teori</div>
+        <div class="ph-sub">Bab 1, 2 &amp; 3 : Bidang Miring, Gaya yang Bekerja, & Percepatan</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+
+    <!-- ══ BAB 1 ══ -->
+    <div class="bab-card" id="bab1">
+      <div class="bab-header" onclick="toggleBab('bab1')">
+        <div class="bab-icon" style="background:#dbeafe">📐</div>
+        <div>
+          <div class="bab-number">Bab 1</div>
+          <div class="bab-title">Apa itu Bidang Miring?</div>
+        </div>
+        <div class="bab-chevron">▸</div>
+      </div>
+      <div class="bab-body">
+        <div class="bab-intro">
+          <b>Bidang miring</b> adalah pesawat sederhana berupa permukaan datar yang membentuk sudut θ terhadap bidang horizontal. Salah satu ujungnya lebih tinggi dari ujung lainnya.
+        </div>
+
+        <!-- Subbab 1a -->
+        <div class="subbab" id="s1a">
+          <div class="subbab-head" onclick="toggleSubbab('s1a')">
+            <div class="subbab-dot" style="background:#1d4ed8"></div>
+            <div class="subbab-title">Definisi &amp; Ciri Bidang Miring</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p>Bidang miring merupakan salah satu dari enam <b>pesawat sederhana</b>. Prinsipnya: dengan jarak tempuh lebih panjang, gaya yang dibutuhkan menjadi lebih kecil. Itulah mengapa ramp dan tanjakan digunakan untuk memindahkan benda ke ketinggian.</p>
+            <div class="info-strip" style="background:#eff6ff;border:1.5px solid #bfdbfe;color:#1e3a5f">
+              <div class="si">💡</div>
+              <div>Semakin <b>kecil sudut θ</b>, semakin sedikit gaya yang dibutuhkan.Namun, jarak yang ditempuh semakin panjang.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subbab 1b -->
+        <div class="subbab" id="s1b">
+          <div class="subbab-head" onclick="toggleSubbab('s1b')">
+            <div class="subbab-dot" style="background:#0ea5e9"></div>
+            <div class="subbab-title">Sudut Kemiringan (θ)</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p>Sudut kemiringan θ adalah sudut antara bidang miring dan bidang horizontal. Sudut ini adalah kunci dalam menghitung semua gaya yang bekerja pada benda di bidang miring.</p>
+            <div class="fblock">$$\tan\theta = \frac{h}{d} \quad \Rightarrow \quad \theta = \arctan\!\left(\frac{h}{d}\right)$$</div>
+            <p>di mana $h$ = tinggi bidang dan $d$ = panjang alas (jarak horizontal). Kisaran nilai: <b>0° &lt; θ &lt; 90°</b>.</p>
+            <div class="info-strip" style="background:#f0fdf4;border:1.5px solid #86efac;color:#14532d">
+              <div class="si">📐</div>
+              <div>Contoh: tanjakan jalan raya umumnya θ ≈ 6°–15°. Ramp kursi roda standar θ ≤ 8°. Ski lereng kompetitif θ ≈ 45°–60°.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subbab 1c -->
+        <div class="subbab" id="s1c">
+          <div class="subbab-head" onclick="toggleSubbab('s1c')">
+            <div class="subbab-dot" style="background:#7c3aed"></div>
+            <div class="subbab-title">Keuntungan Mekanis</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p>Keuntungan mekanis (KM) bidang miring adalah perbandingan panjang bidang miring terhadap tingginya:</p>
+            <div class="fblock">$$KM = \frac{L}{h} = \frac{1}{\sin\theta}$$</div>
+            <p>Semakin besar KM, semakin ringan gaya yang diperlukan. Namun benda harus menempuh jarak $L$ (panjang bidang miring), bukan $h$ (tinggi langsung).</p>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /bab1 -->
+
+    <!-- ══ BAB 2 ══ -->
+    <div class="bab-card" id="bab2">
+      <div class="bab-header" onclick="toggleBab('bab2')">
+        <div class="bab-icon" style="background:#fef9c3">⚖️</div>
+        <div>
+          <div class="bab-number">Bab 2</div>
+          <div class="bab-title">Gaya yang Bekerja pada Bidang Miring</div>
+        </div>
+        <div class="bab-chevron">▸</div>
+      </div>
+      <div class="bab-body">
+        <div class="bab-intro">
+          Untuk menganalisis gerak benda di bidang miring, kita perlu memahami setiap gaya yang bekerja. Ada tiga gaya utama: <b>gaya berat</b>, <b>gaya normal</b>, dan <b>gaya gesek</b>.
+        </div>
+
+        <!-- Subbab 2a: Gaya Berat -->
+        <div class="subbab" id="s2a">
+          <div class="subbab-head" onclick="toggleSubbab('s2a')">
+            <div class="subbab-dot" style="background:#d97706"></div>
+            <div class="subbab-title">Gaya Berat &amp; Penguraian Gaya Berat</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p><b>Gaya berat</b> ($W$) adalah gaya gravitasi yang bekerja pada benda, arahnya selalu <em>tegak lurus ke bawah</em> menuju pusat bumi.</p>
+            <div class="fblock">$$W = m \cdot g$$</div>
+            <p>dengan $m$ = massa benda (kg) dan $g \approx 9{,}8\ \text{m/s}^2$ (dibulatkan $10\ \text{m/s}^2$ dalam soal).</p>
+            <p>Karena bidang <em>miring</em>, gaya berat harus <b>diuraikan</b> menjadi dua komponen terhadap sumbu bidang miring:</p>
+            <div class="fblock">$$W_{\parallel} = W\sin\theta = mg\sin\theta$$</div>
+            <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:-4px">→ Sejajar bidang (ke bawah bidang) — penyebab benda meluncur</p>
+            <div class="fblock">$$W_{\perp} = W\cos\theta = mg\cos\theta$$</div>
+            <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:-4px">→ Tegak lurus bidang (menekan permukaan)</p>
+            <div class="info-strip" style="background:#fef9c3;border:1.5px solid #fde047;color:#854d0e">
+              <div class="si">💡</div>
+              <div>Semakin besar θ → $W\sinθ$ makin besar (lebih mudah meluncur), $W\cosθ$ makin kecil (tekanan ke bidang berkurang).</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subbab 2b: Gaya Normal -->
+        <div class="subbab" id="s2b">
+          <div class="subbab-head" onclick="toggleSubbab('s2b')">
+            <div class="subbab-dot" style="background:#16a34a"></div>
+            <div class="subbab-title">Gaya Normal</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p><b>Gaya normal</b> ($N$) adalah gaya kontak yang diberikan permukaan bidang kepada benda. Arahnya selalu <em>tegak lurus keluar dari permukaan bidang</em>.</p>
+            <p>Karena benda tidak bergerak tegak lurus terhadap bidang (tidak menembus permukaan), maka $\Sigma F_\perp = 0$:</p>
+            <div class="fblock">$$N - W\cos\theta = 0 \quad \Rightarrow \quad N = mg\cos\theta$$</div>
+            <div class="info-strip" style="background:#dcfce7;border:1.5px solid #86efac;color:#14532d">
+              <div class="si">✅</div>
+              <div>Gaya normal <b>TIDAK selalu sama dengan berat benda</b>. Hanya di bidang datar (θ = 0°) berlaku $N = W$. Di bidang miring, $N = mg\cosθ &lt; mg$.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subbab 2c: Gaya Gesek -->
+        <div class="subbab" id="s2c">
+          <div class="subbab-head" onclick="toggleSubbab('s2c')">
+            <div class="subbab-dot" style="background:#ea580c"></div>
+            <div class="subbab-title">Gaya Gesek Statis &amp; Kinetis</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p><b>Gaya gesek</b> timbul akibat kekasaran dua permukaan yang saling bersentuhan. Arahnya selalu <em>berlawanan dengan arah gerak atau kecenderungan gerak</em> benda.</p>
+            <div class="info-strip" style="background:#fff7ed;border:1.5px solid #fed7aa;color:#7c2d12">
+              <div class="si">🛑</div>
+              <div>
+                <b>Gesek Statis ($f_s$)</b> → bekerja saat benda <em>diam</em>, mencegah benda bergerak. Nilainya dapat bervariasi antara 0 hingga nilai maksimum:<br>
+                $$f_{s,\text{maks}} = \mu_s \cdot N = \mu_s \cdot mg\cos\theta$$
+              </div>
+            </div>
+            <div class="info-strip" style="background:#fef2f2;border:1.5px solid #fca5a5;color:#7f1d1d">
+              <div class="si">▶️</div>
+              <div>
+                <b>Gesek Kinetis ($f_k$)</b> → bekerja saat benda <em>bergerak</em>. Nilainya tetap dan lebih kecil dari gesek statis maksimum:<br>
+                $$f_k = \mu_k \cdot N = \mu_k \cdot mg\cos\theta$$
+              </div>
+            </div>
+            <div class="info-strip" style="background:#ede9fe;border:1.5px solid #c4b5fd;color:#4c1d95">
+              <div class="si">⚠️</div>
+              <div>Selalu berlaku $\mu_k \leq \mu_s$, sehingga $f_k \leq f_{s,\text{maks}}$. Nilai μ bergantung pada jenis material kedua permukaan.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /bab2 -->
+
+    <!-- ══ BAB 3 ══ -->
+    <div class="bab-card" id="bab3">
+      <div class="bab-header" onclick="toggleBab('bab3')">
+        <div class="bab-icon" style="background:#ede9fe">⚡</div>
+        <div>
+          <div class="bab-number">Bab 3</div>
+          <div class="bab-title">Percepatan pada Bidang Miring</div>
+        </div>
+        <div class="bab-chevron">▸</div>
+      </div>
+      <div class="bab-body">
+        <div class="bab-intro">
+          Setelah memahami semua gaya, kita terapkan <b>Hukum II Newton</b> ($\Sigma F = ma$) untuk menentukan apakah benda diam atau bergerak, dan berapa percepatannya.
+        </div>
+
+        <!-- Subbab 3a -->
+        <div class="subbab" id="s3a">
+          <div class="subbab-head" onclick="toggleSubbab('s3a')">
+            <div class="subbab-dot" style="background:#1d4ed8"></div>
+            <div class="subbab-title">Syarat Benda Bergerak atau Diam</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p>Benda di bidang miring akan <b>meluncur ke bawah</b> jika komponen gaya berat sejajar bidang melebihi gaya gesek statis maksimum:</p>
+            <div class="fblock">$$mg\sin\theta > f_{s,\text{maks}} = \mu_s \cdot mg\cos\theta$$</div>
+            <div class="fblock">$$\tan\theta > \mu_s \quad \Leftrightarrow \quad \theta > \arctan(\mu_s) = \theta_c$$</div>
+            <p>di mana $\theta_c$ disebut <b>sudut kritis</b>. Jika $\theta \leq \theta_c$, benda tetap <em>diam</em>.</p>
+            <div class="info-strip" style="background:#eff6ff;border:1.5px solid #bfdbfe;color:#1e3a5f">
+              <div class="si">📌</div>
+              <div>Contoh: jika μs = 0,5, maka θc = arctan(0,5) ≈ 26,6°. Benda mulai meluncur saat sudut lebih dari 26,6°.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subbab 3b -->
+        <div class="subbab" id="s3b">
+          <div class="subbab-head" onclick="toggleSubbab('s3b')">
+            <div class="subbab-dot" style="background:#7c3aed"></div>
+            <div class="subbab-title">Percepatan</div>
+            <div class="subbab-chevron">▸</div>
+          </div>
+          <div class="subbab-body">
+            <p>Saat benda meluncur ke bawah bidang, terapkan Hukum Newton II pada sumbu sejajar bidang (positif ke arah bawah bidang):</p>
+            <div class="fblock">$$\Sigma F_{\parallel} = mg\sin\theta - f_k = ma$$</div>
+            <p>Substitusikan $f_k = \mu_k \cdot mg\cos\theta$:</p>
+            <div class="fblock">$$mg\sin\theta - \mu_k mg\cos\theta = ma$$</div>
+            <div class="fblock">$$\boxed{a = g\left(\sin\theta - \mu_k\cos\theta\right)}$$</div>
+            <div class="info-strip" style="background:#f0fdf4;border:1.5px solid #86efac;color:#14532d">
+              <div class="si">🎯</div>
+              <div>Percepatan <b>tidak bergantung pada massa</b> benda. Benda berat dan ringan meluncur sama cepat di kondisi yang sama.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /bab3 -->
+
+  </div>
+</div><!-- /konsepScreen -->
+
+<!-- ══════════════ SIMULASI ══════════════ -->
+<div id="simulasiScreen" class="screen">
+  <div class="page-header">
+    <div class="ph-top">
+      <button class="ph-back" onclick="gotoScreen('home')">‹</button>
+      <div>
+        <div class="ph-title">🎮 Simulasi Interaktif</div>
+        <div class="ph-sub">Geser slider → gaya berubah real-time</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body">
+    <div class="canvas-wrap">
+      <canvas id="simCanvas" width="420" height="300"></canvas>
+      <div class="legend">
+        <span class="leg"><span class="ldot" style="background:#ca8a04"></span>W (berat)</span>
+        <span class="leg"><span class="ldot" style="background:#a855f7"></span>N (normal)</span>
+        <span class="leg"><span class="ldot" style="background:#16a34a"></span>W·sinθ</span>
+        <span class="leg"><span class="ldot" style="background:#4ade80"></span>W·cosθ</span>
+        <span class="leg"><span class="ldot" style="background:#f97316"></span>fk</span>
+      </div>
+    </div>
+    <div class="slider-card">
+      <div class="sl-label">📐 Sudut θ <span class="sl-val" id="thetaVal">30°</span></div>
+      <input type="range" id="thetaSlider" min="5" max="75" value="30">
+    </div>
+    <div class="slider-card">
+      <div class="sl-label">⚖️ Massa m <span class="sl-val" id="massaVal">5 kg</span></div>
+      <input type="range" id="massaSlider" min="1" max="50" value="5">
+    </div>
+    <div class="slider-card">
+      <div class="sl-label">🧲 Koef. Statis μ<sub>s</sub> <span class="sl-val" id="muSVal">0.40</span></div>
+      <input type="range" id="muSSlider" min="0" max="100" value="40">
+    </div>
+    <div class="slider-card">
+      <div class="sl-label">🔄 Koef. Kinetis μ<sub>k</sub> <span class="sl-val" id="muKVal">0.30</span></div>
+      <input type="range" id="muKSlider" min="0" max="100" value="30">
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-lbl">W (N)</div><div class="stat-val" id="sv_W">—</div></div>
+      <div class="stat-card"><div class="stat-lbl">N (N)</div><div class="stat-val" id="sv_N">—</div></div>
+      <div class="stat-card"><div class="stat-lbl" id="sv_fLbl">fs (N)</div><div class="stat-val" id="sv_F">—</div></div>
+      <div class="stat-card"><div class="stat-lbl">W sinθ</div><div class="stat-val" id="sv_Wsin">—</div></div>
+      <div class="stat-card"><div class="stat-lbl">W cosθ</div><div class="stat-val" id="sv_Wcos">—</div></div>
+      <div class="stat-card"><div class="stat-lbl">a (m/s²)</div><div class="stat-val" id="sv_A">—</div></div>
+    </div>
+    <div id="verdictBox" class="verdict idle">⚙️ Atur parameter, lalu tekan JALANKAN</div>
+    <div class="btn-row">
+      <button id="runBtn">▶ JALANKAN</button>
+      <button id="resetBtn" class="btn-sec">↺ Reset</button>
+      <button id="resetAllBtn" class="btn-dng">⟳ Semua</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ KUIS ══════════════ -->
+<div id="kuisScreen" class="screen">
+  <div class="page-header">
+    <div class="ph-top">
+      <button class="ph-back" onclick="gotoScreen('home')">‹</button>
+      <div>
+        <div class="ph-title">🧠 Kuis Evaluasi</div>
+        <div class="ph-sub">Pilih paket &amp; uji pemahamanmu</div>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-body" id="kuisBody">
+    <!-- diisi oleh JS -->
+  </div>
+</div>
+
+</div><!-- .app -->
+
+<script>
+/* ══════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════ */
+function gotoScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id+'Screen').classList.add('active');
+  if(id==='simulasi') initSim();
+  if(id==='kuis') renderKuisHome();
+}
+
+/* ══════════════════════════════════════
+   SIMULASI
+══════════════════════════════════════ */
+let simInited = false;
+let theta=30, massa=5, mu_s=0.40, mu_k=0.30, g=9.8;
+let animId=null, isRunning=false, blockT=0.15, vel=0, t0=0;
+
+function initSim(){
+  if(!simInited){
+    const SLt=document.getElementById('thetaSlider');
+    const SLm=document.getElementById('massaSlider');
+    const SLs=document.getElementById('muSSlider');
+    const SLk=document.getElementById('muKSlider');
+    SLt.addEventListener('input',()=>{stopAnim();readSliders();updateUI();drawCanvas();});
+    SLm.addEventListener('input',()=>{stopAnim();readSliders();updateUI();drawCanvas();});
+    SLs.addEventListener('input',()=>{stopAnim();readSliders();updateUI();drawCanvas();});
+    SLk.addEventListener('input',()=>{stopAnim();readSliders();updateUI();drawCanvas();});
+    document.getElementById('runBtn').addEventListener('click',startAnim);
+    document.getElementById('resetBtn').addEventListener('click',stopAnim);
+    document.getElementById('resetAllBtn').addEventListener('click',resetAll);
+    window.addEventListener('resize',()=>{
+      if(document.getElementById('simulasiScreen').classList.contains('active')) drawCanvas();
+    });
+    simInited=true;
+  }
+  readSliders(); updateUI(); drawCanvas();
+}
+
+function readSliders(){
+  theta = parseInt(document.getElementById('thetaSlider').value);
+  massa = parseInt(document.getElementById('massaSlider').value);
+  mu_s  = document.getElementById('muSSlider').value/100;
+  mu_k  = Math.min(document.getElementById('muKSlider').value/100, mu_s);
+  document.getElementById('muKSlider').value = mu_k*100;
+  document.getElementById('thetaVal').innerText = theta+'°';
+  document.getElementById('massaVal').innerText = massa+' kg';
+  document.getElementById('muSVal').innerText   = mu_s.toFixed(2);
+  document.getElementById('muKVal').innerText   = mu_k.toFixed(2);
+}
+
+function calc(){
+  const rad=theta*Math.PI/180;
+  const W=massa*g, Wsin=W*Math.sin(rad), Wcos=W*Math.cos(rad), N=Wcos;
+  const fsMax=mu_s*N;
+  const bergerak=Wsin>fsMax;
+  const f=bergerak?mu_k*N:Wsin;
+  const a=bergerak?(Wsin-mu_k*N)/massa:0;
+  return{rad,W,N,Wsin,Wcos,fsMax,f,a,bergerak};
+}
+
+function updateUI(){
+  const s=calc();
+  document.getElementById('sv_W').innerText=s.W.toFixed(1);
+  document.getElementById('sv_N').innerText=s.N.toFixed(1);
+  document.getElementById('sv_Wsin').innerText=s.Wsin.toFixed(1);
+  document.getElementById('sv_Wcos').innerText=s.Wcos.toFixed(1);
+  document.getElementById('sv_fLbl').innerText=s.bergerak?'fk (N)':'fs (N)';
+  document.getElementById('sv_F').innerText=s.f.toFixed(1);
+  document.getElementById('sv_A').innerText=s.bergerak?s.a.toFixed(2):'0 (diam)';
+  const vb=document.getElementById('verdictBox');
+  vb.className='verdict '+(s.bergerak?'gerak':'diam');
+  vb.innerHTML=s.bergerak
+    ?`▶️ Benda <b>BERGERAK</b> — a = ${s.a.toFixed(2)} m/s², fk = ${s.f.toFixed(1)} N`
+    :`🛑 Benda <b>DIAM</b> — fs = ${s.f.toFixed(1)} N menahan W sinθ = ${s.Wsin.toFixed(1)} N`;
+}
+
+function drawCanvas(){
+  const canvas=document.getElementById('simCanvas');
+  const ctx=canvas.getContext('2d');
+  const s=calc();
+  const CW=420, CH=300;
+  canvas.width=CW; canvas.height=CH;
+
+  const bg=ctx.createLinearGradient(0,0,CW,CH);
+  bg.addColorStop(0,'#f8fbff'); bg.addColorStop(1,'#e8f0fe');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,CW,CH);
+
+  const rad=s.rad;
+  const ox=50, oy=CH-35, rampBase=320;
+  const rampH=rampBase*Math.tan(rad);
+  const topX=ox, topY=oy-Math.min(rampH,CH-60);
+  const botX=ox+rampBase, botY=oy;
+  const surfLen=Math.sqrt((botX-topX)**2+(botY-topY)**2);
+  const usx=(botX-topX)/surfLen, usy=(botY-topY)/surfLen;
+  const onx=usy, ony=-usx;
+
+  // Ground
+  ctx.beginPath(); ctx.moveTo(ox-10,oy); ctx.lineTo(botX+15,oy);
+  ctx.strokeStyle='#94a3b8'; ctx.lineWidth=2; ctx.stroke();
+
+  // Ramp fill
+  ctx.beginPath();
+  ctx.moveTo(topX,topY); ctx.lineTo(botX,botY); ctx.lineTo(ox,oy); ctx.closePath();
+  const rg=ctx.createLinearGradient(ox,topY,botX,botY);
+  rg.addColorStop(0,'#c7d9f5'); rg.addColorStop(1,'#a5c0ed');
+  ctx.fillStyle=rg; ctx.fill();
+  ctx.strokeStyle='#4b72b0'; ctx.lineWidth=2; ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(topX,topY); ctx.lineTo(botX,botY);
+  ctx.strokeStyle='#2563eb'; ctx.lineWidth=3; ctx.stroke();
+
+  // Angle arc
+  const arcR=40;
+  ctx.beginPath(); ctx.arc(botX,botY,arcR,Math.PI,Math.PI+rad,false);
+  ctx.strokeStyle='#dc2626'; ctx.lineWidth=1.8; ctx.stroke();
+  ctx.fillStyle='#dc2626'; ctx.font='bold 12px "Plus Jakarta Sans",sans-serif';
+  ctx.textAlign='center';
+  ctx.fillText(`θ=${theta}°`,botX-arcR*1.5,botY-12);
+
+  // Block position
+  const bt=blockT||0.45;
+  const blockW=36, blockH=28;
+  const surfX=topX+usx*surfLen*bt;
+  const surfY=topY+usy*surfLen*bt;
+  const bx=surfX+onx*(blockH/2);
+  const by=surfY+ony*(blockH/2);
+
+  // Shadow
+  ctx.save(); ctx.translate(bx+2,by+2); ctx.rotate(Math.atan2(usy,usx));
+  ctx.fillStyle='rgba(0,0,0,0.15)';
+  ctx.beginPath(); ctx.roundRect(-blockW/2,-blockH/2,blockW,blockH,4); ctx.fill();
+  ctx.restore();
+
+  // Block body
+  ctx.save(); ctx.translate(bx,by); ctx.rotate(Math.atan2(usy,usx));
+  const blg=ctx.createLinearGradient(-blockW/2,-blockH/2,blockW/2,blockH/2);
+  blg.addColorStop(0,'#334155'); blg.addColorStop(1,'#0f172a');
+  ctx.fillStyle=blg;
+  ctx.beginPath(); ctx.roundRect(-blockW/2,-blockH/2,blockW,blockH,5); ctx.fill();
+  ctx.fillStyle='rgba(255,255,255,0.12)';
+  ctx.beginPath(); ctx.roundRect(-blockW/2,-blockH/2,blockW,blockH/2,5); ctx.fill();
+  ctx.strokeStyle='rgba(255,255,255,0.25)'; ctx.lineWidth=1.2;
+  ctx.beginPath(); ctx.roundRect(-blockW/2,-blockH/2,blockW,blockH,5); ctx.stroke();
+  ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=0.8; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.roundRect(-blockW/2+4,-blockH/2+4,blockW-8,blockH-8,3); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='#e2e8f0'; ctx.font=`bold 9px 'JetBrains Mono',monospace`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(`${massa}kg`,0,0);
+  ctx.restore();
+
+  // Vectors
+  const maxF=Math.max(s.W,s.N,s.Wsin,s.Wcos,0.1);
+  const sc=Math.min(60,100/maxF);
+  drawVec(ctx,bx,by,0,s.W*sc,'#ca8a04','W');
+  drawVec(ctx,bx,by,onx*s.N*sc,ony*s.N*sc,'#a855f7','N');
+  drawVec(ctx,bx,by,usx*s.Wsin*sc,usy*s.Wsin*sc,'#16a34a','W·sinθ');
+  drawVec(ctx,bx,by,-onx*s.Wcos*sc,-ony*s.Wcos*sc,'#4ade80','W·cosθ');
+  if(s.f>0.1) drawVec(ctx,bx,by,-usx*s.f*sc,-usy*s.f*sc,'#f97316',s.bergerak?'fk':'fs');
+}
+
+function drawVec(ctx,x,y,dx,dy,color,label){
+  const len=Math.hypot(dx,dy); if(len<3) return;
+  ctx.save();
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+dx,y+dy);
+  ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.stroke();
+  const ang=Math.atan2(dy,dx),hs=9,tx=x+dx,ty=y+dy;
+  ctx.beginPath(); ctx.moveTo(tx,ty);
+  ctx.lineTo(tx-hs*Math.cos(ang-0.4),ty-hs*Math.sin(ang-0.4));
+  ctx.lineTo(tx-hs*Math.cos(ang+0.4),ty-hs*Math.sin(ang+0.4));
+  ctx.fillStyle=color; ctx.fill();
+  ctx.font='bold 10px "Plus Jakarta Sans",sans-serif';
+  ctx.fillStyle=color;
+  ctx.fillText(label,tx+8*Math.cos(ang),ty+8*Math.sin(ang)+3);
+  ctx.restore();
+}
+
+function stopAnim(){
+  if(animId){cancelAnimationFrame(animId);animId=null;}
+  isRunning=false; blockT=0.15; vel=0; drawCanvas();
+}
+
+function startAnim(){
+  if(isRunning){stopAnim();return;}
+  const s=calc();
+  if(!s.bergerak){alert('Benda diam! Perbesar sudut atau kurangi μs.');return;}
+  isRunning=true; t0=performance.now();
+  const a=s.a,v0=vel,p0=blockT;
+  function step(now){
+    const dt=(now-t0)/1000;
+    blockT=p0+v0*dt+0.5*a*dt*dt;
+    vel=v0+a*dt;
+    if(blockT>=0.90){blockT=0.90;vel=0;isRunning=false;drawCanvas();alert('✨ Benda mencapai dasar bidang!');return;}
+    drawCanvas();
+    animId=requestAnimationFrame(step);
+  }
+  animId=requestAnimationFrame(step);
+}
+
+function resetAll(){
+  stopAnim();
+  document.getElementById('thetaSlider').value=30;
+  document.getElementById('massaSlider').value=5;
+  document.getElementById('muSSlider').value=40;
+  document.getElementById('muKSlider').value=30;
+  readSliders(); updateUI(); drawCanvas();
+}
+
+/* ══════════════════════════════════════
+   KUIS
+══════════════════════════════════════ */
+const bank={
+  A:[
+    {q:"Gaya normal pada bidang miring bekerja …",opts:["Tegak lurus keluar dari bidang","Sejajar bidang ke bawah","Vertikal ke atas","Sama dengan gaya berat"],c:0,fb:"Gaya normal N tegak lurus keluar dari permukaan bidang, besarnya N = mg cosθ."},
+    {q:"Komponen gaya berat yang menyebabkan benda meluncur ke bawah bidang miring adalah …",opts:["W sinθ","W cosθ","W","μN"],c:0,fb:"W sinθ bekerja sejajar bidang ke arah bawah — inilah gaya yang mendorong benda meluncur."},
+    {q:"Jika sudut bidang diperbesar dari 30° menjadi 60°, gaya gesek statis maksimum akan …",opts:["Bertambah","Berkurang","Tetap sama","Menjadi nol"],c:1,fb:"N = mg cosθ mengecil saat θ membesar, sehingga f_maks = μsN juga berkurang."},
+    {q:"Syarat minimum agar benda tidak meluncur di bidang miring sudut θ adalah μs ≥ …",opts:["sinθ","cosθ","tanθ","1/cosθ"],c:2,fb:"Dari W sinθ = μs·mg cosθ, diperoleh μs,min = tanθ."},
+    {q:"Dua benda (2 kg dan 10 kg) meluncur tanpa gesek di bidang miring sudut sama. Percepatan keduanya …",opts:["Sama besar","Benda 2 kg lebih besar","Benda 10 kg lebih besar","Bergantung bentuk benda"],c:0,fb:"a = g sinθ tidak bergantung massa — keduanya memiliki percepatan sama!"}
+  ],
+  B:[
+    {q:"Mobil 1200 kg parkir di tanjakan 15° (μs = 0,35). Apakah mobil meluncur?",opts:["Meluncur","Tidak meluncur","Tergantung rem","Meluncur saat hujan"],c:1,fb:"W sinθ ≈ 3047 N, f_maks ≈ 3979 N. Karena f_maks > W sinθ, mobil tetap diam."},
+    {q:"Ramp kursi roda 8° lebih mudah didorong daripada tanjakan 30° karena …",opts:["Gaya dorong yang dibutuhkan lebih kecil","Jaraknya lebih pendek","Gaya geseknya lebih besar","Massa pengguna berkurang"],c:0,fb:"Sudut kecil → W sinθ lebih kecil → gaya yang dibutuhkan untuk mendorong lebih kecil."},
+    {q:"Atap miring 25°, genteng μs = 0,6, massa 8 kg. Apakah genteng aman dari meluncur?",opts:["Aman, tidak meluncur","Meluncur perlahan","Tergantung cuaca","Tidak aman"],c:0,fb:"f_maks = μs·N ≈ 42,6 N > W sinθ ≈ 33,1 N, sehingga genteng aman."},
+    {q:"Pemain ski menuruni lereng 55° (μk = 0,05). Percepatannya mendekati …",opts:["2 m/s²","5 m/s²","8 m/s²","10 m/s²"],c:2,fb:"a = g(sin55° − 0,05·cos55°) ≈ 10(0,819 − 0,029) ≈ 7,9 ≈ 8 m/s²."},
+    {q:"Conveyor belt berhenti, kardus μs = 0,6 berada di sudut 20°. Apakah kardus meluncur?",opts:["Meluncur","Tetap diam","Melayang","Bergantung kecepatan awal"],c:1,fb:"μs·cosθ > sinθ (0,6·0,94 > 0,34) → f_maks > W sinθ, kardus tetap diam."}
+  ],
+  C:[
+    {q:"Balok 6 kg, θ = 37° (sin=0,6; cos=0,8), μk = 0,25. Berapakah percepatannya?",opts:["2 m/s²","3 m/s²","4 m/s²","5 m/s²"],c:2,fb:"a = 10(0,6 − 0,25×0,8) = 10(0,6 − 0,20) = 10×0,4 = 4 m/s²."},
+    {q:"Berapa μs minimum agar benda tidak meluncur di θ = 30°?",opts:["0,500","0,577","0,866","1,150"],c:1,fb:"μs,min = tan30° = 1/√3 ≈ 0,577."},
+    {q:"Benda 10 kg didorong ke atas bidang 30° dengan F = 80 N, μk = 0,2. Percepatan?",opts:["1,27 m/s²","2,68 m/s²","3,20 m/s²","4,50 m/s²"],c:0,fb:"ΣF = 80 − mg sin30° − μk·mg cos30° = 80 − 50 − 17,3 = 12,7 N → a = 1,27 m/s²."},
+    {q:"Benda meluncur tanpa gesek dari ketinggian h = 5 m. Kecepatan di dasar?",opts:["5 m/s","7 m/s","10 m/s","14 m/s"],c:2,fb:"Energi: mgh = ½mv² → v = √(2gh) = √(2×10×5) = 10 m/s."},
+    {q:"Benda tepat mulai bergerak di θ = 35°. Nilai μs adalah …",opts:["0,47","0,57","0,70","0,82"],c:2,fb:"μs = tan35° ≈ 0,700."}
+  ]
+};
+
+let selPaket=null, soalList=[], idx=0, skor=0, answered=false, jawabLog=[];
+
+function renderKuisHome(){
+  const body=document.getElementById('kuisBody');
+  body.innerHTML=`
+    <div class="sec-title" style="margin-bottom:6px">Pilih Paket Soal</div>
+    <div class="paket-grid">
+      <div class="paket-card" data-p="A" onclick="pilihPaket(this)"><div class="pk-icon">📦</div><div class="pk-label">Paket A</div><div class="pk-sub">Konsep Dasar</div></div>
+      <div class="paket-card" data-p="B" onclick="pilihPaket(this)"><div class="pk-icon">🏠</div><div class="pk-label">Paket B</div><div class="pk-sub">Kehidupan Nyata</div></div>
+      <div class="paket-card" data-p="C" onclick="pilihPaket(this)"><div class="pk-icon">⚗️</div><div class="pk-label">Paket C</div><div class="pk-sub">Perhitungan</div></div>
+    </div>
+    <button id="mulaiBtn" class="mulai-btn" disabled style="margin-top:6px">▶ Mulai Kuis (pilih paket dulu)</button>
+    <div class="info-strip" style="background:#f0fdf4;border:1.5px solid #86efac;color:#14532d;border-radius:16px">
+      <div class="si">📦</div>
+      <div><b>Paket A. Konsep Dasar</b><br>Definisi gaya normal, komponen berat, gaya gesek, dan syarat kesetimbangan.</div>
+    </div>
+    <div class="info-strip" style="background:#eff6ff;border:1.5px solid #93c5fd;color:#1e40af;border-radius:16px">
+      <div class="si">🏠</div>
+      <div><b>Paket B. Penerapan Nyata</b><br>Kasus nyata: parkir tanjakan, ramp kursi roda, atap genteng, ski, conveyor belt.</div>
+    </div>
+    <div class="info-strip" style="background:#fdf4ff;border:1.5px solid #d8b4fe;color:#6b21a8;border-radius:16px">
+      <div class="si">⚗️</div>
+      <div><b>Paket C. Perhitungan</b><br>Soal hitung: percepatan, μ minimum, gaya dorong, dan kecepatan di dasar bidang.</div>
+    </div>`;
+  selPaket=null;
+  document.getElementById('mulaiBtn').addEventListener('click',mulaiKuis);
+}
+
+function pilihPaket(el){
+  document.querySelectorAll('.paket-card').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  selPaket=el.dataset.p;
+  const btn=document.getElementById('mulaiBtn');
+  btn.disabled=false;
+  btn.innerText=`▶ Mulai Paket ${selPaket}`;
+}
+
+function mulaiKuis(){
+  if(!selPaket) return;
+  soalList=[...bank[selPaket]]; idx=0; skor=0; answered=false; jawabLog=[];
+  renderSoal();
+}
+
+function renderSoal(){
+  const s=soalList[idx];
+  const pct=((idx/soalList.length)*100).toFixed(0);
+  const body=document.getElementById('kuisBody');
+  let html=`<div class="soal-wrap">
+    <div class="prog-wrap">
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <span class="prog-lbl">Soal ${idx+1}/${soalList.length}</span>
+    </div>
+    <div class="soal-box">
+      <div class="soal-q">${s.q}</div>
+      <div id="optList">`;
+  s.opts.forEach((o,i)=>{
+    html+=`<div class="option" data-i="${i}" onclick="jawab(${i})"><div class="opt-badge">${String.fromCharCode(65+i)}</div>${o}</div>`;
+  });
+  html+=`</div><div id="fbBox" style="display:none" class="fb-box"></div></div>
+    <button id="nextBtn" class="next-btn" disabled onclick="nextSoal()">${idx+1<soalList.length?'Selanjutnya →':'Lihat Hasil'}</button>
+  </div>`;
+  body.innerHTML=html;
+  answered=false;
+}
+
+function jawab(pilih){
+  if(answered) return; answered=true;
+  const s=soalList[idx], benar=pilih===s.c;
+  if(benar) skor++;
+  jawabLog.push({benar,teksBenar:s.opts[s.c]});
+  document.querySelectorAll('.option').forEach((el,i)=>{
+    el.style.pointerEvents='none';
+    if(i===s.c) el.classList.add('correct');
+    if(i===pilih&&i!==s.c) el.classList.add('wrong');
+  });
+  const fb=document.getElementById('fbBox');
+  fb.style.display='block';
+  fb.innerHTML=benar?`✅ <b>Benar!</b> ${s.fb}`:`❌ <b>Salah.</b> ${s.fb}`;
+  document.getElementById('nextBtn').disabled=false;
+}
+
+function nextSoal(){
+  if(idx+1<soalList.length){idx++;renderSoal();}
+  else showHasil();
+}
+
+function showHasil(){
+  const total=soalList.length, pct=(skor/total)*100;
+  const emoji=pct>=80?'🏆':(pct>=50?'🎉':'💪');
+  const pesan=pct>=80?'Luar Biasa! Penguasaan Sempurna!':(pct>=50?'Bagus! Terus Tingkatkan!':'Pelajari Ulang Materinya.');
+  let html=`<div class="hasil-wrap">
+    <div class="skor-ring"><div class="skor-num">${skor}/${total}</div><div class="skor-sub">Skor Akhir</div></div>
+    <div class="hasil-label">${emoji} ${pesan}</div>
+    <div class="review-list">`;
+  jawabLog.forEach((a,i)=>{
+    html+=`<div class="rev-item"><div class="rev-icon">${a.benar?'✅':'❌'}</div><div>Soal ${i+1}: Jawaban benar — <b>${a.teksBenar.substring(0,60)}</b></div></div>`;
+  });
+  html+=`</div>
+    <div class="btn-row" style="width:100%">
+      <button onclick="mulaiLagi()">↺ Ulangi</button>
+      <button class="btn-sec" onclick="renderKuisHome()">🔀 Ganti Paket</button>
+    </div></div>`;
+  document.getElementById('kuisBody').innerHTML=html;
+}
+
+function mulaiLagi(){
+  soalList=[...bank[selPaket]]; idx=0; skor=0; answered=false; jawabLog=[];
+  renderSoal();
+}
+
+/* ══════════════════════════════════════
+   KONSEP: BAB TOGGLE
+══════════════════════════════════════ */
+function toggleBab(id){
+  document.getElementById(id).classList.toggle('open');
+}
+function toggleSubbab(id){
+  document.getElementById(id).classList.toggle('open');
+}
+</script>
+</body>
+</html>
